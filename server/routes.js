@@ -1,8 +1,6 @@
 const router = require("express").Router();
 // const { delay } = require("./helpers");
-const { getSeats } = require("./handlers");
-
-const assert = require("assert");
+const { getSeats, updateSeats } = require("./handlers");
 
 const NUM_OF_ROWS = 8;
 const SEATS_PER_ROW = 12;
@@ -61,63 +59,8 @@ router.get("/api/seat-availability", async (req, res) => {
   });
 });
 
-let lastBookingAttemptSucceeded = false;
+// router.get("/api/seat-availability", getSeats);
 
-router.post("/api/book-seat", async (req, res) => {
-  const { seatId, creditCard, expiration } = req.body;
-
-  if (!state) {
-    state = {
-      bookedSeats: randomlyBookSeats(30),
-    };
-  }
-  const newValues = { $set: { isBooked: false } };
-  const databaseResponse = await db
-    .collection("greetings")
-    .updateOne({ _id }, { ...newValues });
-  assert.equal(1, databaseResponse.matchedCount);
-  assert.equal(1, databaseResponse.modifiedCount);
-
-  /* mongo function to update seats in DB, get that seat ID just like we did with precious
-with the object $set{newvalue} and with the update you use the id to find the object
-
-const newValues = { $set: { isBooked: false } };
-    const databaseResponse = await db.collection("greetings")
-                                     .updateOne({ _id }, { ...newValues});
-                                     make it is booked true instead of false
-  */
-  // await delay(Math.random() * 3000);
-
-  const isAlreadyBooked = !!state.bookedSeats[seatId];
-  if (isAlreadyBooked) {
-    return res.status(400).json({
-      message: "This seat has already been booked!",
-    });
-  }
-
-  if (!creditCard || !expiration) {
-    return res.status(400).json({
-      status: 400,
-      message: "Please provide credit card information!",
-    });
-  }
-
-  if (lastBookingAttemptSucceeded) {
-    lastBookingAttemptSucceeded = !lastBookingAttemptSucceeded;
-
-    return res.status(500).json({
-      message: "An unknown error has occurred. Please try your request again.",
-    });
-  }
-
-  lastBookingAttemptSucceeded = !lastBookingAttemptSucceeded;
-
-  state.bookedSeats[seatId] = true;
-
-  return res.status(200).json({
-    status: 200,
-    success: true,
-  });
-});
+router.post("/api/book-seat", updateSeats);
 
 module.exports = router;
