@@ -14,6 +14,7 @@ const { MongoClient } = require("mongodb");
 //     });
 //   }
 // }
+const { cleanData } = require("../src/utils");
 
 require("dotenv").config();
 const { MONGO_URI } = process.env;
@@ -23,7 +24,22 @@ const options = {
   useUnifiedTopology: true,
 };
 
-const getSeats = async (req, res) => {};
+const getSeats = async () => {
+  const client = await MongoClient(MONGO_URI, options);
+
+  await client.connect();
+  const db = client.db("exercise_2");
+  console.log("connected!");
+
+  const seats = await db.collection("seats").find().toArray();
+
+  const cleanedData = cleanData(seats);
+
+  // res.status(200).json({ status: 200, seats: cleanedData, bookedSeats });
+
+  // console.log("seats", cleanedData);
+  return cleanedData;
+};
 
 // const moveSeats = async () => {
 //   const client = await MongoClient(MONGO_URI, options);
@@ -40,4 +56,4 @@ const getSeats = async (req, res) => {};
 //   }
 // };
 
-module.exports = { getSeats, moveSeats };
+module.exports = { getSeats };
